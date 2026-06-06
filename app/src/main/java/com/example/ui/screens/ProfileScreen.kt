@@ -20,7 +20,6 @@ fun ProfileScreen(navController: NavController) {
     var isChildLockEnabled by remember { mutableStateOf(false) }
     var showPinDialog by remember { mutableStateOf(false) }
     var pinInput by remember { mutableStateOf("") }
-    
     val currentPin = "1234"
 
     Column(
@@ -84,7 +83,7 @@ fun ProfileScreen(navController: NavController) {
     if (showPinDialog) {
         AlertDialog(
             onDismissRequest = { showPinDialog = false },
-            title = { Text("Çocuk Kilidi Pin Kodu (1234)") },
+            title = { Text("PIN Girin (1234)") },
             text = {
                 OutlinedTextField(
                     value = pinInput,
@@ -106,6 +105,11 @@ fun ProfileScreen(navController: NavController) {
                     colors = ButtonDefaults.buttonColors(containerColor = RedMain)
                 ) {
                     Text("Onayla")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPinDialog = false; pinInput = "" }) {
+                    Text("İptal", color = Color.Gray)
                 }
             }
         )

@@ -1,18 +1,12 @@
 package com.example.ui.screens
 
 import android.app.Activity
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.MediaItem
@@ -27,8 +24,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import com.example.data.AppContainer
-import kotlinx.coroutines.launch
 import com.example.data.MediaEntity
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: NavController) {
@@ -42,21 +39,19 @@ fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: N
     }
 
     LaunchedEffect(episodeId) {
-        coroutineScope.launch {
-            episode = appContainer.database.mediaDao().getMediaById(episodeId)
-            episode?.let {
-                val mediaItem = MediaItem.fromUri(it.streamUrl)
-                exoPlayer.setMediaItem(mediaItem)
-                exoPlayer.prepare()
-                exoPlayer.playWhenReady = true
-            }
+        val ep = appContainer.database.mediaDao().getById(episodeId)
+        episode = ep
+        ep?.let {
+            val mediaItem = MediaItem.fromUri(Uri.parse(it.streamUrl))
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.seekTo(it.watchProgress)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
         }
     }
-    
-    // Manage Lifecycle
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
-        // Enter Immersive Mode
         activity?.let { act ->
             val window = act.window
             WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -76,20 +71,19 @@ fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: N
         lifecycleOwner.lifecycle.addObserver(observer)
         
         onDispose {
-            // Exit Immersive Mode
             activity?.let { act ->
                 val window = act.window
-                WindowCompat.setDecorFitsSystemWindows(window, false) // keep edge to edge, just show bars
+                WindowCompat.setDecorFitsSystemWindows(window, true)
                 WindowInsetsControllerCompat(window, window.decorView).apply {
                     show(WindowInsetsCompat.Type.systemBars())
                 }
             }
             
             lifecycleOwner.lifecycle.removeObserver(observer)
-            // Save progress
             val currentPos = exoPlayer.currentPosition
             val totalDur = exoPlayer.duration.coerceAtLeast(0L)
             exoPlayer.release()
+            
             coroutineScope.launch {
                 episode?.let { 
                     appContainer.database.mediaDao().update(
@@ -105,21 +99,19 @@ fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: N
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-        AndroidView(
-            factory = {
-                PlayerView(context).apply {
-                    player = exoPlayer
-                    layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-        
-        IconButton(
-            onClick = { navController.navigateUp() },
-            modifier = Modifier.align(Alignment.TopStart)
-        ) {
-            Icon(Icons.Filled.ArrowBack, contentDescription = "Geri Çık", tint = Color.White)
+        if (episode != null) {
+            AndroidView(
+                factory = { ctx ->
+                    PlayerView(ctx).apply {
+                        player = exoPlayer
+                        layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                        keepScreenOn = true
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
     }
 }

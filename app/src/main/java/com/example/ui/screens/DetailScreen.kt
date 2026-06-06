@@ -29,14 +29,8 @@ import com.example.ui.theme.RedMain
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(showName: String, viewModel: MainViewModel, navController: NavController) {
-    LaunchedEffect(showName) {
-        viewModel.loadShowDetails(showName)
-    }
-
-    val details = viewModel.selectedShowDetails.collectAsState().value
+fun DetailScreen(viewModel: MainViewModel, navController: NavController, showName: String) {
     val episodes = viewModel.selectedShowEpisodes.collectAsState().value
-    
     val posterUrl = episodes.firstOrNull()?.logoUrl
 
     Scaffold(
@@ -79,38 +73,20 @@ fun DetailScreen(showName: String, viewModel: MainViewModel, navController: NavC
                             .align(Alignment.BottomStart)
                             .padding(16.dp)
                     ) {
-                        Text(details?.Title ?: showName, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color.White)
-                        details?.let {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(it.Year ?: "", color = Color.LightGray, style = MaterialTheme.typography.bodySmall)
-                                Spacer(Modifier.width(8.dp))
-                                Box(modifier = Modifier.background(Color.White.copy(alpha=0.2f), RoundedCornerShape(4.dp)).padding(horizontal=4.dp)) {
-                                     Text("IMDb ${it.imdbRating}", color = Color.White, style = MaterialTheme.typography.labelSmall)
-                                }
-                            }
-                        }
+                        Text(showName, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color.White)
                     }
                 }
                 
-                details?.let {
-                    Column(Modifier.padding(16.dp)) {
-                        Text(it.Plot ?: "Konu bulunamadı.", style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                        Spacer(Modifier.height(16.dp))
-                        
-                        Button(
-                            onClick = { if (episodes.isNotEmpty()) navController.navigate("player/${episodes.first().id}") },
-                            colors = ButtonDefaults.buttonColors(containerColor = RedMain),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth().height(48.dp)
-                        ) {
-                             Icon(Icons.Filled.PlayArrow, contentDescription = null)
-                             Spacer(Modifier.width(8.dp))
-                             Text("İlk Bölümü İzle", fontWeight = FontWeight.Bold)
-                        }
-                    }
-                } ?: run {
-                    Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = RedMain)
+                Column(Modifier.padding(16.dp)) {
+                    Button(
+                        onClick = { if (episodes.isNotEmpty()) navController.navigate("player/${episodes.first().id}") },
+                        colors = ButtonDefaults.buttonColors(containerColor = RedMain),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                    ) {
+                         Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                         Spacer(Modifier.width(8.dp))
+                         Text("İlk Bölümü İzle", fontWeight = FontWeight.Bold)
                     }
                 }
                 

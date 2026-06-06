@@ -25,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.data.ShowInfo
 import com.example.ui.theme.RedMain
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -174,7 +173,8 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                             text = "TÜMÜNÜ GÖR",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = RedMain
+                            color = RedMain,
+                            modifier = Modifier.clickable { navController.navigate("history") }
                         )
                     }
                     LazyRow(
@@ -262,6 +262,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                     text = "Tüm Çizgi Diziler",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
+                    color = Color.White,
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -275,7 +276,6 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
     }
 }
 
-// Ensure the ShowItemRow is maintained properly or re-implemented since we removed the original completely in our replacement block
 @Composable
 fun ShowItemRow(show: ShowInfo, onClick: () -> Unit) {
     Card(
