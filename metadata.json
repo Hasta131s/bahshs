@@ -1,0 +1,6 @@
+{
+  "name": "MoonToon",
+  "description": "Çizgi filmler, çizgi diziler ve Netflix tarzı gelişmiş bir arayüze sahip eğlenceli çizgi film izleme platformu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
