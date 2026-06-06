@@ -1,5 +1,9 @@
 package com.example.ui.screens
 
+import android.app.Activity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
@@ -29,6 +33,7 @@ import com.example.data.MediaEntity
 @Composable
 fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: NavController) {
     val context = LocalContext.current
+    val activity = context as? Activity
     val coroutineScope = rememberCoroutineScope()
     var episode by remember { mutableStateOf<MediaEntity?>(null) }
     
@@ -51,6 +56,16 @@ fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: N
     // Manage Lifecycle
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
+        // Enter Immersive Mode
+        activity?.let { act ->
+            val window = act.window
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            WindowInsetsControllerCompat(window, window.decorView).apply {
+                hide(WindowInsetsCompat.Type.systemBars())
+                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+        
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {
                 exoPlayer.pause()
@@ -61,15 +76,27 @@ fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: N
         lifecycleOwner.lifecycle.addObserver(observer)
         
         onDispose {
+            // Exit Immersive Mode
+            activity?.let { act ->
+                val window = act.window
+                WindowCompat.setDecorFitsSystemWindows(window, false) // keep edge to edge, just show bars
+                WindowInsetsControllerCompat(window, window.decorView).apply {
+                    show(WindowInsetsCompat.Type.systemBars())
+                }
+            }
+            
             lifecycleOwner.lifecycle.removeObserver(observer)
-            exoPlayer.release()
             // Save progress
+            val currentPos = exoPlayer.currentPosition
+            val totalDur = exoPlayer.duration.coerceAtLeast(0L)
+            exoPlayer.release()
             coroutineScope.launch {
                 episode?.let { 
                     appContainer.database.mediaDao().update(
                         it.copy(
                             lastWatchedTime = System.currentTimeMillis(),
-                            watchProgress = exoPlayer.currentPosition
+                            watchProgress = currentPos,
+                            totalDuration = totalDur
                         )
                     )
                 }
