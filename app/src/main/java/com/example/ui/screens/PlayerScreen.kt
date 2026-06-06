@@ -54,6 +54,7 @@ fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: N
     DisposableEffect(lifecycleOwner) {
         activity?.let { act ->
             val window = act.window
+            act.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             WindowCompat.setDecorFitsSystemWindows(window, false)
             WindowInsetsControllerCompat(window, window.decorView).apply {
                 hide(WindowInsetsCompat.Type.systemBars())
@@ -73,7 +74,8 @@ fun PlayerScreen(episodeId: String, appContainer: AppContainer, navController: N
         onDispose {
             activity?.let { act ->
                 val window = act.window
-                WindowCompat.setDecorFitsSystemWindows(window, true)
+                act.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                WindowCompat.setDecorFitsSystemWindows(window, false)
                 WindowInsetsControllerCompat(window, window.decorView).apply {
                     show(WindowInsetsCompat.Type.systemBars())
                 }
