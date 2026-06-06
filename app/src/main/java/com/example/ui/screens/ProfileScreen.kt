@@ -1,13 +1,18 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.ui.theme.RedMain
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,36 +24,60 @@ fun ProfileScreen(navController: NavController) {
     val currentPin = "1234"
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text("Profil Yönetimi", style = MaterialTheme.typography.headlineLarge)
-        Spacer(Modifier.height(32.dp))
+        TopAppBar(
+            title = { Text("Profil", fontWeight = FontWeight.Bold, color = Color.White) },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+        )
         
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+        Column(Modifier.padding(16.dp)) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Text("Çocuk Kilidi", style = MaterialTheme.typography.titleMedium)
-                Switch(
-                    checked = isChildLockEnabled,
-                    onCheckedChange = { 
-                        if (it) {
-                            showPinDialog = true
-                        } else {
-                            isChildLockEnabled = false
-                        }
-                    }
-                )
+                Row(
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Çocuk Kilidi", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Switch(
+                        checked = isChildLockEnabled,
+                        onCheckedChange = { 
+                            if (it) {
+                                showPinDialog = true
+                            } else {
+                                isChildLockEnabled = false
+                            }
+                        },
+                        colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = RedMain)
+                    )
+                }
             }
-        }
-        
-        Spacer(Modifier.height(16.dp))
-        
-        Button(onClick = { /* Handle offline downloads navigate */ }) {
-            Text("İndirilenler")
+            
+            Spacer(Modifier.height(16.dp))
+            
+            Button(
+                onClick = { /* Handle offline downloads */ },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text("İndirilenler", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+            
+            Spacer(Modifier.height(16.dp))
+            
+            Button(
+                onClick = { /* Check updates */ },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text("Güncellemeleri Kontrol Et", color = Color.White, fontWeight = FontWeight.Bold)
+            }
         }
     }
 
@@ -60,7 +89,9 @@ fun ProfileScreen(navController: NavController) {
                 OutlinedTextField(
                     value = pinInput,
                     onValueChange = { pinInput = it },
-                    visualTransformation = PasswordVisualTransformation()
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RedMain)
                 )
             },
             confirmButton = {
@@ -71,7 +102,8 @@ fun ProfileScreen(navController: NavController) {
                             showPinDialog = false
                             pinInput = ""
                         }
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RedMain)
                 ) {
                     Text("Onayla")
                 }

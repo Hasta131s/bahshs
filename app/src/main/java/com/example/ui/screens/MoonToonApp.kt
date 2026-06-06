@@ -1,5 +1,11 @@
 package com.example.ui.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,34 +20,77 @@ fun MoonToonApp(viewModel: MainViewModel, appContainer: AppContainer) {
     val navController = rememberNavController()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ) {
                 val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
                 NavigationBarItem(
                     selected = currentRoute == "home",
                     onClick = { navController.navigate("home") },
-                    icon = { Text("🏠") },
-                    label = { Text("Ana Sayfa") }
+                    icon = { Icon(Icons.Filled.Home, contentDescription = "Ana Sayfa") },
+                    label = { Text("Ana Sayfa") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
                 NavigationBarItem(
                     selected = currentRoute == "search",
                     onClick = { navController.navigate("search") },
-                    icon = { Text("🔍") },
-                    label = { Text("Ara") }
+                    icon = { Icon(Icons.Filled.Search, contentDescription = "Ara") },
+                    label = { Text("Ara") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
                 NavigationBarItem(
                     selected = currentRoute == "favorites",
                     onClick = { navController.navigate("favorites") },
-                    icon = { Text("❤️") },
-                    label = { Text("Favoriler") }
+                    icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favoriler") },
+                    label = { Text("Favoriler") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                NavigationBarItem(
+                    selected = currentRoute == "history",
+                    onClick = { navController.navigate("history") },
+                    icon = { Icon(Icons.Filled.Refresh, contentDescription = "Geçmiş") },
+                    label = { Text("Geçmiş") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
                 NavigationBarItem(
                     selected = currentRoute == "profile",
                     onClick = { navController.navigate("profile") },
-                    icon = { Text("👤") },
-                    label = { Text("Profil") }
+                    icon = { Icon(Icons.Filled.Person, contentDescription = "Profil") },
+                    label = { Text("Profil") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
             }
         }
@@ -59,6 +108,9 @@ fun MoonToonApp(viewModel: MainViewModel, appContainer: AppContainer) {
             }
             composable("favorites") {
                 FavoritesScreen(viewModel = viewModel, navController = navController)
+            }
+            composable("history") {
+                HistoryScreen(viewModel = viewModel, navController = navController)
             }
             composable("profile") {
                 ProfileScreen(navController = navController)
