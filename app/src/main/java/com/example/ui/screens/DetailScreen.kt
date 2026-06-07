@@ -127,7 +127,7 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
                         
                         if (!details?.year.isNullOrEmpty() && details?.year != "N/A") {
                             Text(
-                                text = details!!.year,
+                                text = details?.year ?: "",
                                 color = Color.LightGray,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
@@ -137,7 +137,7 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
                         if (!details?.genre.isNullOrEmpty() && details?.genre != "N/A") {
                             Text("•", color = Color.Gray)
                             Text(
-                                text = details!!.genre,
+                                text = details?.genre ?: "",
                                 color = Color.LightGray,
                                 style = MaterialTheme.typography.bodyMedium,
                                 overflow = TextOverflow.Ellipsis,
@@ -149,7 +149,7 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
 
                     // Turkish Translated Plot Description
                     val plotText = if (!details?.plot.isNullOrEmpty()) {
-                        details!!.plot
+                        details?.plot ?: ""
                     } else if (episodes.isNotEmpty()) {
                         "Harika çizgi film bölümlerini MoonToon kalitesiyle Türkçe seyredin!"
                     } else {
@@ -167,7 +167,7 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
                     // Actors Information
                     if (!details?.actors.isNullOrEmpty() && details?.actors != "N/A") {
                         Text(
-                            text = "Göz Atın / Oyuncular: ${details!!.actors}",
+                            text = "Göz Atın / Oyuncular: ${details?.actors ?: ""}",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.LightGray.copy(alpha = 0.8f),
                             modifier = Modifier.padding(bottom = 16.dp)

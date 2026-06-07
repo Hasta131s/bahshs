@@ -38,25 +38,36 @@ class MainViewModel(private val appContainer: AppContainer, private val context:
 
     init {
         viewModelScope.launch {
-            if (dao.getAll().isEmpty()) {
-                val parsed = M3uParser.parseFromAssets(context)
-                dao.insertAll(parsed)
+            try {
+                if (dao.getAll().isEmpty()) {
+                    val parsed = M3uParser.parseFromAssets(context.applicationContext)
+                    dao.insertAll(parsed)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("MainViewModel", "Error loading media list from assets", e)
             }
             
-            // Collect shows and pre-fetch details for any that are missing
+            // Collect shows and pre-fetch details safely and sequentially to prevent spamming DB/network
             launch {
-                allShows.collectLatest { shows ->
-                    shows.forEach { show ->
-                        launch {
-                            val cached = dao.getShowDetails(show.showName)
-                            if (cached == null) {
-                                val fetched = OmdbHelper.fetchShowDetails(show.showName)
-                                if (fetched != null) {
-                                    dao.insertShowDetails(fetched)
+                try {
+                    allShows.collectLatest { shows ->
+                        shows.forEach { show ->
+                            try {
+                                val cached = dao.getShowDetails(show.showName)
+                                if (cached == null) {
+                                    val fetched = OmdbHelper.fetchShowDetails(show.showName)
+                                    if (fetched != null) {
+                                        dao.insertShowDetails(fetched)
+                                    }
+                                    kotlinx.coroutines.delay(200) // 200ms delay to keep CPU, network and database fully responsive
                                 }
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainViewModel", "Error fetching details for ${show.showName}", e)
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("MainViewModel", "Error in shows flow collector", e)
                 }
             }
         }

@@ -68,7 +68,11 @@ object M3uParser {
         }
 
         fun scanAssetsDir(dir: String, defaultCategory: String) {
-            val list = assets.list(dir) ?: emptyArray()
+            val list = try {
+                assets.list(dir) ?: emptyArray()
+            } catch (e: Exception) {
+                emptyArray()
+            }
             for (item in list) {
                 val fullPath = if (dir.isEmpty()) item else "${dir}/${item}"
                 if (item.endsWith(".m3u")) {
