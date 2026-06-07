@@ -227,7 +227,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                     Spacer(Modifier.height(24.dp))
                 }
             }
-
+            
             // CATEGORIES CAROUSEL
             showsByCategory.forEach { (catName, shows) ->
                 item {
@@ -245,9 +245,9 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                                     .width(120.dp)
                                     .aspectRatio(2f/3f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .border(1.2.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                    .border(1.2.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
                                     .clickable { navController.navigate("details/${show.showName}") }
-                                    .background(MaterialTheme.colorScheme.surface)
+                                    .background(getCategoryGradient(show.category, show.showName))
                             ) {
                                 AsyncImage(
                                     model = posterUrl,
@@ -282,6 +282,24 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
             }
         }
     }
+}
+
+fun getCategoryGradient(category: String, showName: String): Brush {
+    val hash = Math.abs(showName.hashCode())
+    val colors = when {
+        category.contains("Cartoon Network", true) || category.contains("Çocuk", true) -> listOf(Color(0xFF00BCFF), Color(0xFF003866))
+        category.contains("Puhu TV", true) || category.contains("Film", true) -> listOf(Color(0xFFFF007F), Color(0xFF3B001D))
+        category.contains("Belgesel", true) || category.contains("Haber", true) -> listOf(Color(0xFF00E676), Color(0xFF004D40))
+        category.contains("DMAX", true) -> listOf(Color(0xFFFFC633), Color(0xFF664D00))
+        else -> {
+            val hueOffset = (hash % 360).toFloat()
+            listOf(
+                Color.hsv(hueOffset, 0.8f, 0.7f),
+                Color.hsv((hueOffset + 120f) % 360, 0.9f, 0.2f)
+            )
+        }
+    }
+    return Brush.verticalGradient(colors)
 }
 
 @Composable

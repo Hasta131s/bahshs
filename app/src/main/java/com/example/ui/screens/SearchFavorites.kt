@@ -64,17 +64,34 @@ fun SearchScreen(viewModel: MainViewModel, navController: NavController) {
                         modifier = Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (!posterUrl.isNullOrEmpty()) {
-                            AsyncImage(
-                                model = posterUrl,
-                                contentDescription = media.showName,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(50.dp, 75.dp)
-                                    .clip(RoundedCornerShape(6.dp))
-                            )
-                            Spacer(Modifier.width(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp, 75.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(getCategoryGradient(media.category, media.showName))
+                        ) {
+                            if (!posterUrl.isNullOrEmpty()) {
+                                AsyncImage(
+                                    model = posterUrl,
+                                    contentDescription = media.showName,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = media.showName.firstOrNull()?.toString()?.uppercase() ?: "?",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                            }
                         }
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = media.showName,
@@ -121,17 +138,34 @@ fun FavoritesScreen(viewModel: MainViewModel, navController: NavController) {
                         Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (!posterUrl.isNullOrEmpty()) {
-                            AsyncImage(
-                                model = posterUrl,
-                                contentDescription = media.title,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(50.dp, 75.dp)
-                                    .clip(RoundedCornerShape(6.dp))
-                            )
-                            Spacer(Modifier.width(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp, 75.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(getCategoryGradient(media.category, media.showName))
+                        ) {
+                            if (!posterUrl.isNullOrEmpty()) {
+                                AsyncImage(
+                                    model = posterUrl,
+                                    contentDescription = media.title,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = media.showName.firstOrNull()?.toString()?.uppercase() ?: "?",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                            }
                         }
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = media.showName,
@@ -178,17 +212,34 @@ fun HistoryScreen(viewModel: MainViewModel, navController: NavController) {
                         Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (!posterUrl.isNullOrEmpty()) {
-                            AsyncImage(
-                                model = posterUrl,
-                                contentDescription = media.title,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(50.dp, 75.dp)
-                                    .clip(RoundedCornerShape(6.dp))
-                            )
-                            Spacer(Modifier.width(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp, 75.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(getCategoryGradient(media.category, media.showName))
+                        ) {
+                            if (!posterUrl.isNullOrEmpty()) {
+                                AsyncImage(
+                                    model = posterUrl,
+                                    contentDescription = media.title,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = media.showName.firstOrNull()?.toString()?.uppercase() ?: "?",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                            }
                         }
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = media.showName,

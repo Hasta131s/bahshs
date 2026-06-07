@@ -50,20 +50,20 @@ class MainViewModel(private val appContainer: AppContainer, private val context:
             // Collect shows and pre-fetch details safely and sequentially to prevent spamming DB/network
             launch {
                 try {
-                    allShows.collectLatest { shows ->
-                        shows.forEach { show ->
-                            try {
-                                val cached = dao.getShowDetails(show.showName)
-                                if (cached == null) {
-                                    val fetched = OmdbHelper.fetchShowDetails(show.showName)
-                                    if (fetched != null) {
-                                        dao.insertShowDetails(fetched)
-                                    }
-                                    kotlinx.coroutines.delay(200) // 200ms delay to keep CPU, network and database fully responsive
+                    // Use first() to get list of shows as soon as it's parsed from assets/db, instead of repeating/cancelling on updates.
+                    val shows = allShows.first { it.isNotEmpty() }
+                    for (show in shows) {
+                        try {
+                            val cached = dao.getShowDetails(show.showName)
+                            if (cached == null || cached.posterUrl.isEmpty()) {
+                                val fetched = OmdbHelper.fetchShowDetails(show.showName)
+                                if (fetched != null) {
+                                    dao.insertShowDetails(fetched)
                                 }
-                            } catch (e: Exception) {
-                                android.util.Log.e("MainViewModel", "Error fetching details for ${show.showName}", e)
+                                kotlinx.coroutines.delay(300) // 300ms delay to keep server load and network stable
                             }
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainViewModel", "Error fetching details for ${show.showName}", e)
                         }
                     }
                 } catch (e: Exception) {

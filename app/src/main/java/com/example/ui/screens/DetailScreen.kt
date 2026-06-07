@@ -42,6 +42,7 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
     val showDetailsMap = viewModel.showDetailsMap.collectAsState().value
     val details = showDetailsMap[showName]
 
+    val category = episodes.firstOrNull()?.category ?: ""
     val posterUrl = details?.posterUrl?.ifEmpty { null } ?: episodes.firstOrNull()?.logoUrl
 
     Scaffold(
@@ -63,7 +64,10 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
         ) {
             item {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(360.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(360.dp)
+                        .background(getCategoryGradient(category, showName))
                 ) {
                     AsyncImage(
                         model = posterUrl,
