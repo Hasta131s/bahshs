@@ -2,7 +2,7 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ScaffoldDefaults
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -22,7 +22,7 @@ fun MoonToonApp(appContainer: AppContainer) {
     val currentRouteForPadding = navController.currentBackStackEntryAsState().value?.destination?.route
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = if (currentRouteForPadding?.startsWith("player/") == true) WindowInsets(0, 0, 0, 0) else ScaffoldDefaults.contentWindowInsets,
+        contentWindowInsets = if (currentRouteForPadding?.startsWith("player/") == true) WindowInsets(0, 0, 0, 0) else WindowInsets.systemBars,
         bottomBar = {
             val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
             if (currentRoute?.startsWith("player/") != true) {
