@@ -87,8 +87,15 @@ object M3uParser {
                         else -> defaultCategory
                     }
                     processFile(fullPath, cleanCategory)
-                } else if (!item.contains(".")) {
-                    scanAssetsDir(fullPath, item)
+                } else {
+                    val subList = try {
+                        assets.list(fullPath)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (!subList.isNullOrEmpty()) {
+                        scanAssetsDir(fullPath, item)
+                    }
                 }
             }
         }
