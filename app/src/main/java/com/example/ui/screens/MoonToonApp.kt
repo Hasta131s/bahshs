@@ -35,6 +35,7 @@ fun MoonToonApp(appContainer: AppContainer) {
                         onClick = { navController.navigate("home") },
                         icon = { Icon(Icons.Filled.Home, contentDescription = "Ana Sayfa") },
                         label = { Text("Ana Sayfa") },
+                        alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -48,6 +49,7 @@ fun MoonToonApp(appContainer: AppContainer) {
                         onClick = { navController.navigate("search") },
                         icon = { Icon(Icons.Filled.Search, contentDescription = "Ara") },
                         label = { Text("Ara") },
+                        alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -61,19 +63,7 @@ fun MoonToonApp(appContainer: AppContainer) {
                         onClick = { navController.navigate("favorites") },
                         icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favoriler") },
                         label = { Text("Favoriler") },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                    NavigationBarItem(
-                        selected = currentRoute == "history",
-                        onClick = { navController.navigate("history") },
-                        icon = { Icon(Icons.Filled.Refresh, contentDescription = "Geçmiş") },
-                        label = { Text("Geçmiş") },
+                        alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -87,6 +77,7 @@ fun MoonToonApp(appContainer: AppContainer) {
                         onClick = { navController.navigate("profile") },
                         icon = { Icon(Icons.Filled.Person, contentDescription = "Profil") },
                         label = { Text("Profil") },
+                        alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,

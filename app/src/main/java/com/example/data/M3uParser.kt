@@ -21,26 +21,44 @@ object M3uParser {
                 var itemsAdded = 0
 
                 for (line in lines) {
-                    if (itemsAdded >= 100) break // Prevent OOM and DB freeze
-                    
                     if (line.startsWith("#EXTINF:")) {
                         val logoMatch = Regex("tvg-logo=\"([^\"]+)\"").find(line)
                         currentLogo = logoMatch?.groupValues?.get(1) ?: ""
 
-                        val titlePart = line.substringAfterLast(",")
-                        if (titlePart.contains("-")) {
+                        val groupMatch = Regex("group-title=\"([^\"]+)\"").find(line)
+                        val groupTitle = groupMatch?.groupValues?.get(1)?.trim()
+
+                        val titlePart = line.substringAfterLast(",").trim()
+
+                        if (!groupTitle.isNullOrEmpty()) {
+                            currentShow = groupTitle
+                            currentTitle = titlePart
+                        } else if (titlePart.contains(" - ")) {
+                            currentShow = titlePart.substringBeforeLast(" - ").trim()
+                            currentTitle = titlePart.substringAfterLast(" - ").trim()
+                        } else if (titlePart.contains("-")) {
                             currentShow = titlePart.substringBefore("-").trim()
                             currentTitle = titlePart.substringAfter("-").trim()
                         } else {
-                            currentShow = titlePart.trim()
-                            currentTitle = titlePart.trim()
+                            val seasonMatch = Regex("(?i)(.*?)(\\s*(?:S\\d+|\\d+\\.Sezon|\\d+\\.Bölüm))").find(titlePart)
+                            if (seasonMatch != null) {
+                                currentShow = seasonMatch.groupValues[1].trim()
+                                currentTitle = titlePart
+                            } else {
+                                currentShow = titlePart
+                                currentTitle = titlePart
+                            }
+                        }
+                        
+                        // Fallbacks if extraction is generic
+                        if (currentShow.isEmpty() || currentShow.equals("null", true)) {
+                            currentShow = category
                         }
                     } else if (line.isNotEmpty() && !line.startsWith("#")) {
                         val url = line.trim()
                         if (url.startsWith("http")) { // filter valid URLs
                             val id = UUID.nameUUIDFromBytes(url.toByteArray()).toString()
                             mediaList.add(MediaEntity(id, currentShow, currentTitle, url, currentLogo, category))
-                            itemsAdded++
                         }
                     }
                 }

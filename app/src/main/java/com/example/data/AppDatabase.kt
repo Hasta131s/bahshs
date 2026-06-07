@@ -42,7 +42,7 @@ interface MediaDao {
     fun getHistory(): Flow<List<MediaEntity>>
 }
 
-@Database(entities = [MediaEntity::class], version = 1, exportSchema = false)
+@Database(entities = [MediaEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun mediaDao(): MediaDao
 }

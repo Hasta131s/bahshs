@@ -46,14 +46,14 @@ fun SearchScreen(viewModel: MainViewModel, navController: NavController) {
             items(results) { media ->
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    onClick = { navController.navigate("player/${media.id}") },
+                    onClick = { navController.navigate("details/${media.showName}") },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text(media.showName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(4.dp))
-                        Text(media.title, style = MaterialTheme.typography.bodyMedium, color = Color.LightGray)
+                        Text(media.category, style = MaterialTheme.typography.bodyMedium, color = Color.LightGray)
                     }
                 }
             }

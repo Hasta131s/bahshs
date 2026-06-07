@@ -20,13 +20,13 @@ class MainViewModel(private val appContainer: AppContainer, private val context:
     
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
-    
-    val searchResults = combine(allMedia, _searchQuery) { media, query ->
-        if (query.isEmpty()) media else media.filter { it.showName.contains(query, true) || it.title.contains(query, true) }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val allShows = allMedia.map { mediaList ->
         mediaList.distinctBy { it.showName }.map { ShowInfo(it.showName, it.logoUrl, it.category) }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    
+    val searchResults = combine(allShows, _searchQuery) { shows, query ->
+        if (query.isEmpty()) emptyList() else shows.filter { it.showName.contains(query, true) || it.category.contains(query, true) }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _selectedShowName = MutableStateFlow("")
