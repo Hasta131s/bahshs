@@ -30,13 +30,17 @@ object M3uParser {
                         
                         val titlePart = line.substringAfterLast(",").trim()
                         
-                        // We do NOT use groupTitle as currentShow. Group title is category/channel usually.
                         var showExtracted = ""
                         var titleExtracted = titlePart
 
+                        // Priority 1: Generic splitting if it has " - "
                         if (titlePart.contains(" - ")) {
                             showExtracted = titlePart.substringBeforeLast(" - ").trim()
                             titleExtracted = titlePart.substringAfterLast(" - ").trim()
+                            // Fix for things like "Adventure Time - Sezon 5"
+                            if (showExtracted.contains(" - ")) {
+                                showExtracted = showExtracted.substringBefore(" - ").trim()
+                            }
                         } else if (titlePart.contains("-")) {
                             showExtracted = titlePart.substringBefore("-").trim()
                             titleExtracted = titlePart.substringAfter("-").trim()
@@ -50,8 +54,18 @@ object M3uParser {
                                 titleExtracted = titlePart
                             }
                         }
+
+                        // Priority 2: Use groupTitle if it's available and not a generic category name like "Filmler"
+                        if (!groupTitle.isNullOrEmpty() &&
+                            !groupTitle.equals("Filmler", true) &&
+                            !groupTitle.equals("Diziler", true) &&
+                            !groupTitle.equals("Belgeseller", true) &&
+                            !groupTitle.equals("Haberler", true) &&
+                            !groupTitle.equals("Animasyon", true)) {
+                            showExtracted = groupTitle
+                        }
                         
-                        // Fallbacks if extraction is generic
+                        // Priority 3: Fallback if empty
                         if (showExtracted.isEmpty() || showExtracted.equals("null", true)) {
                             showExtracted = category
                         }

@@ -32,7 +32,28 @@ class MainViewModel(private val appContainer: AppContainer, private val context:
 
     private val _selectedShowName = MutableStateFlow("")
     val selectedShowEpisodes = combine(allMedia, _selectedShowName) { media, showName ->
-        media.filter { it.showName == showName }
+        val filtered = media.filter { it.showName == showName }
+        filtered.sortedWith(Comparator { a, b ->
+            val regex = Regex("\\d+|\\D+")
+            val partsA = regex.findAll(a.title).map { it.value }.toList()
+            val partsB = regex.findAll(b.title).map { it.value }.toList()
+            
+            var result = 0
+            for (i in 0 until minOf(partsA.size, partsB.size)) {
+                val pA = partsA[i]
+                val pB = partsB[i]
+                val numA = pA.toIntOrNull()
+                val numB = pB.toIntOrNull()
+                
+                if (numA != null && numB != null) {
+                    result = numA.compareTo(numB)
+                } else {
+                    result = pA.compareTo(pB, ignoreCase = true)
+                }
+                if (result != 0) break
+            }
+            if (result == 0) partsA.size.compareTo(partsB.size) else result
+        })
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     
     private val _omdbDetails = MutableStateFlow<Map<String, OmdbEntity>>(emptyMap())
