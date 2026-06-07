@@ -70,6 +70,11 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
             // HERO BANNER
             if (featuredShow != null) {
                 item {
+                    androidx.compose.runtime.LaunchedEffect(featuredShow.showName) {
+                        viewModel.fetchOmdbDetails(featuredShow.showName)
+                    }
+                    val details = viewModel.omdbDetails.collectAsState().value[featuredShow.showName]
+                    val posterUrl = details?.poster?.takeIf { it.isNotEmpty() } ?: featuredShow.logoUrl
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -77,7 +82,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                             .clickable { navController.navigate("details/${featuredShow.showName}") }
                     ) {
                         AsyncImage(
-                            model = featuredShow.logoUrl,
+                            model = posterUrl,
                             contentDescription = featuredShow.showName,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
@@ -220,36 +225,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(shows) { show ->
-                            Box(
-                                modifier = Modifier
-                                    .width(120.dp)
-                                    .aspectRatio(2f/3f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { navController.navigate("details/${show.showName}") }
-                                    .background(Color.DarkGray)
-                            ) {
-                                AsyncImage(
-                                    model = show.logoUrl,
-                                    contentDescription = show.showName,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                                Box(modifier = Modifier.fillMaxSize().background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(Color.Transparent, Color.Black.copy(alpha=0.9f)),
-                                        startY = 100f
-                                    )
-                                ))
-                                Text(
-                                    text = show.showName,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+                            ShowCard(show = show, viewModel = viewModel, navController = navController)
                         }
                     }
                     Spacer(Modifier.height(24.dp))
@@ -260,6 +236,46 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                 Spacer(Modifier.height(80.dp))
             }
         }
+    }
+}
+
+@Composable
+fun ShowCard(show: ShowInfo, viewModel: MainViewModel, navController: NavController) {
+    androidx.compose.runtime.LaunchedEffect(show.showName) {
+        viewModel.fetchOmdbDetails(show.showName)
+    }
+    val details = viewModel.omdbDetails.collectAsState().value[show.showName]
+    val posterUrl = details?.poster?.takeIf { it.isNotEmpty() } ?: show.logoUrl
+
+    Box(
+        modifier = Modifier
+            .width(120.dp)
+            .aspectRatio(2f/3f)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { navController.navigate("details/${show.showName}") }
+            .background(Color.DarkGray)
+    ) {
+        AsyncImage(
+            model = posterUrl,
+            contentDescription = show.showName,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        Box(modifier = Modifier.fillMaxSize().background(
+            Brush.verticalGradient(
+                colors = listOf(Color.Transparent, Color.Black.copy(alpha=0.9f)),
+                startY = 100f
+            )
+        ))
+        Text(
+            text = show.showName,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

@@ -34,7 +34,7 @@ fun MoonToonApp(appContainer: AppContainer) {
                         selected = currentRoute == "home",
                         onClick = { navController.navigate("home") },
                         icon = { Icon(Icons.Filled.Home, contentDescription = "Ana Sayfa") },
-                        label = { Text("Ana Sayfa") },
+                        label = { androidx.compose.material3.Text("Home", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false) },
                         alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -48,7 +48,7 @@ fun MoonToonApp(appContainer: AppContainer) {
                         selected = currentRoute == "search",
                         onClick = { navController.navigate("search") },
                         icon = { Icon(Icons.Filled.Search, contentDescription = "Ara") },
-                        label = { Text("Ara") },
+                        label = { androidx.compose.material3.Text("Ara", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false) },
                         alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -62,7 +62,7 @@ fun MoonToonApp(appContainer: AppContainer) {
                         selected = currentRoute == "favorites",
                         onClick = { navController.navigate("favorites") },
                         icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favoriler") },
-                        label = { Text("Favoriler") },
+                        label = { androidx.compose.material3.Text("Favoriler", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false) },
                         alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -76,7 +76,7 @@ fun MoonToonApp(appContainer: AppContainer) {
                         selected = currentRoute == "profile",
                         onClick = { navController.navigate("profile") },
                         icon = { Icon(Icons.Filled.Person, contentDescription = "Profil") },
-                        label = { Text("Profil") },
+                        label = { androidx.compose.material3.Text("Profil", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false) },
                         alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,

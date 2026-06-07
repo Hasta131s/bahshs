@@ -116,7 +116,7 @@ fun HistoryScreen(viewModel: MainViewModel, navController: NavController) {
                         Text(media.title, style = MaterialTheme.typography.bodyMedium, color = Color.LightGray)
                         val progress = if (media.totalDuration > 0) media.watchProgress.toFloat() / media.totalDuration else 0f
                         Spacer(Modifier.height(8.dp))
-                        LinearProgressIndicator(progress = progress, modifier = Modifier.fillMaxWidth(), color = RedMain)
+                        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), color = RedMain)
                     }
                 }
             }

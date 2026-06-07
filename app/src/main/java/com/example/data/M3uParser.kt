@@ -27,33 +27,38 @@ object M3uParser {
 
                         val groupMatch = Regex("group-title=\"([^\"]+)\"").find(line)
                         val groupTitle = groupMatch?.groupValues?.get(1)?.trim()
-
+                        
                         val titlePart = line.substringAfterLast(",").trim()
+                        
+                        // We do NOT use groupTitle as currentShow. Group title is category/channel usually.
+                        var showExtracted = ""
+                        var titleExtracted = titlePart
 
-                        if (!groupTitle.isNullOrEmpty()) {
-                            currentShow = groupTitle
-                            currentTitle = titlePart
-                        } else if (titlePart.contains(" - ")) {
-                            currentShow = titlePart.substringBeforeLast(" - ").trim()
-                            currentTitle = titlePart.substringAfterLast(" - ").trim()
+                        if (titlePart.contains(" - ")) {
+                            showExtracted = titlePart.substringBeforeLast(" - ").trim()
+                            titleExtracted = titlePart.substringAfterLast(" - ").trim()
                         } else if (titlePart.contains("-")) {
-                            currentShow = titlePart.substringBefore("-").trim()
-                            currentTitle = titlePart.substringAfter("-").trim()
+                            showExtracted = titlePart.substringBefore("-").trim()
+                            titleExtracted = titlePart.substringAfter("-").trim()
                         } else {
                             val seasonMatch = Regex("(?i)(.*?)(\\s*(?:S\\d+|\\d+\\.Sezon|\\d+\\.Bölüm))").find(titlePart)
                             if (seasonMatch != null) {
-                                currentShow = seasonMatch.groupValues[1].trim()
-                                currentTitle = titlePart
+                                showExtracted = seasonMatch.groupValues[1].trim()
+                                titleExtracted = titlePart
                             } else {
-                                currentShow = titlePart
-                                currentTitle = titlePart
+                                showExtracted = titlePart
+                                titleExtracted = titlePart
                             }
                         }
                         
                         // Fallbacks if extraction is generic
-                        if (currentShow.isEmpty() || currentShow.equals("null", true)) {
-                            currentShow = category
+                        if (showExtracted.isEmpty() || showExtracted.equals("null", true)) {
+                            showExtracted = category
                         }
+                        
+                        currentShow = showExtracted
+                        currentTitle = titleExtracted
+
                     } else if (line.isNotEmpty() && !line.startsWith("#")) {
                         val url = line.trim()
                         if (url.startsWith("http")) { // filter valid URLs

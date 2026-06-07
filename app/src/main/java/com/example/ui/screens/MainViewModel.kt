@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.AppContainer
 import com.example.data.M3uParser
 import com.example.data.MediaEntity
+import com.example.data.OmdbEntity
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -33,6 +34,19 @@ class MainViewModel(private val appContainer: AppContainer, private val context:
     val selectedShowEpisodes = combine(allMedia, _selectedShowName) { media, showName ->
         media.filter { it.showName == showName }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    
+    private val _omdbDetails = MutableStateFlow<Map<String, OmdbEntity>>(emptyMap())
+    val omdbDetails = _omdbDetails.asStateFlow()
+
+    fun fetchOmdbDetails(title: String) {
+        if (_omdbDetails.value.containsKey(title)) return
+        viewModelScope.launch {
+            val details = appContainer.omdbRepository.getShowInfo(title)
+            if (details != null) {
+                _omdbDetails.value = _omdbDetails.value.toMutableMap().apply { put(title, details) }
+            }
+        }
+    }
 
     init {
         viewModelScope.launch {

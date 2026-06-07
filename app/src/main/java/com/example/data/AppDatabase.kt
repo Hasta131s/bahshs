@@ -42,8 +42,32 @@ interface MediaDao {
     fun getHistory(): Flow<List<MediaEntity>>
 }
 
-@Database(entities = [MediaEntity::class], version = 2, exportSchema = false)
+@Entity(tableName = "omdb_cache")
+data class OmdbEntity(
+    @PrimaryKey val title: String,
+    val poster: String,
+    val plot: String,
+    val genre: String,
+    val actors: String,
+    val imdbRating: String,
+    val lastFetched: Long
+)
+
+@Dao
+interface OmdbDao {
+    @Query("SELECT * FROM omdb_cache WHERE title = :title COLLATE NOCASE LIMIT 1")
+    suspend fun getByTitle(title: String): OmdbEntity?
+
+    @Query("SELECT * FROM omdb_cache")
+    fun getAllFlow(): Flow<List<OmdbEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(omdbInfo: OmdbEntity)
+}
+
+@Database(entities = [MediaEntity::class, OmdbEntity::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun mediaDao(): MediaDao
+    abstract fun omdbDao(): OmdbDao
 }
 

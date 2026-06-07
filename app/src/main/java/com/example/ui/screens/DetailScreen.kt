@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
@@ -30,8 +31,15 @@ import com.example.ui.theme.RedMain
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(viewModel: MainViewModel, navController: NavController, showName: String) {
+    LaunchedEffect(showName) {
+        viewModel.fetchOmdbDetails(showName)
+    }
+
     val episodes = viewModel.selectedShowEpisodes.collectAsState().value
-    val posterUrl = episodes.firstOrNull()?.logoUrl
+    val details = viewModel.omdbDetails.collectAsState().value[showName]
+    
+    val posterUrl = details?.poster?.takeIf { it.isNotEmpty() } ?: episodes.firstOrNull()?.logoUrl
+    val plot = details?.plot ?: "Detaylar yükleniyor..."
 
     Scaffold(
         topBar = {
@@ -39,7 +47,7 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
                 title = { Text(showName, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Geri", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -75,11 +83,34 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
                             .align(Alignment.BottomStart)
                             .padding(16.dp)
                     ) {
+                        if (details?.genre?.isNotEmpty() == true && details.genre != "N/A") {
+                            Text(details.genre, style = MaterialTheme.typography.labelMedium, color = Color.LightGray, modifier = Modifier.padding(bottom = 8.dp))
+                        }
                         Text(showName, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color.White)
+                        
+                        if (details?.imdbRating?.isNotEmpty() == true && details.imdbRating != "N/A") {
+                            Spacer(Modifier.height(8.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Filled.Favorite, contentDescription = "Sıralama", tint = Color(0xFFFFD700), modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("IMDB: ${details.imdbRating}", style = MaterialTheme.typography.labelMedium, color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                 }
                 
                 Column(Modifier.padding(16.dp)) {
+                    Text(
+                        text = plot,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.LightGray,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    
+                    if (details?.actors?.isNotEmpty() == true && details.actors != "N/A") {
+                        Text("Oyuncular: ${details.actors}", style = MaterialTheme.typography.bodySmall, color = Color.Gray, modifier = Modifier.padding(bottom = 16.dp))
+                    }
+
                     Button(
                         onClick = { if (episodes.isNotEmpty()) navController.navigate("player/${episodes.first().id}") },
                         colors = ButtonDefaults.buttonColors(containerColor = RedMain),

@@ -9,4 +9,8 @@ class AppContainer(private val context: Context) {
             .fallbackToDestructiveMigration()
             .build()
     }
+    
+    val omdbRepository: OmdbRepository by lazy {
+        OmdbRepository(database.omdbDao())
+    }
 }
