@@ -31,8 +31,13 @@ object M3uParser {
                         val titlePart = line.substringAfterLast(",").trim()
 
                         if (!groupTitle.isNullOrEmpty()) {
-                            currentShow = groupTitle
-                            currentTitle = titlePart
+                            if (groupTitle.equals("Filmler", ignoreCase = true) || groupTitle.equals("Movies", ignoreCase = true)) {
+                                currentShow = titlePart
+                                currentTitle = "Sinema Filmi"
+                            } else {
+                                currentShow = groupTitle
+                                currentTitle = titlePart
+                            }
                         } else if (titlePart.contains(" - ")) {
                             currentShow = titlePart.substringBeforeLast(" - ").trim()
                             currentTitle = titlePart.substringAfterLast(" - ").trim()

@@ -44,10 +44,9 @@ object OmdbHelper {
         }
     }
 
-    suspend fun fetchShowDetails(showName: String): ShowDetailsEntity? = withContext(Dispatchers.IO) {
-        val queryName = mapShowNameForQuery(showName)
-        val urlString = "https://www.omdbapi.com/?apikey=$API_KEY&t=${URLEncoder.encode(queryName, "UTF-8")}"
+    private suspend fun executeQuery(urlString: String): kotlinx.serialization.json.JsonObject? = withContext(Dispatchers.IO) {
         try {
+            Log.d("OMDB", "Querying: $urlString")
             val url = URL(urlString)
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
@@ -57,49 +56,131 @@ object OmdbHelper {
             val responseCode = connection.responseCode
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 val jsonText = connection.inputStream.bufferedReader().use { it.readText() }
-                Log.d("OMDB", "Response for $showName (query: $queryName): $jsonText")
                 val jsonObject = Json { ignoreUnknownKeys = true }.parseToJsonElement(jsonText).jsonObject
                 val responseTag = jsonObject["Response"]?.jsonPrimitive?.content ?: "False"
-                
                 if (responseTag.equals("True", true)) {
-                    val title = jsonObject["Title"]?.jsonPrimitive?.content ?: showName
-                    val poster = jsonObject["Poster"]?.jsonPrimitive?.content ?: ""
-                    val englishPlot = jsonObject["Plot"]?.jsonPrimitive?.content ?: ""
-                    val rating = jsonObject["imdbRating"]?.jsonPrimitive?.content ?: ""
-                    val genre = jsonObject["Genre"]?.jsonPrimitive?.content ?: ""
-                    val year = jsonObject["Year"]?.jsonPrimitive?.content ?: ""
-                    val actors = jsonObject["Actors"]?.jsonPrimitive?.content ?: ""
-                    
-                    // Direct quick translate checks
-                    val translatedPlot = if (englishPlot.isNotEmpty() && !englishPlot.equals("N/A", true)) {
-                        translateToTurkish(englishPlot).ifEmpty { englishPlot }
-                    } else {
-                        "Açıklama bulunamadı."
-                    }
-                    
-                    val translatedGenre = if (genre.isNotEmpty() && !genre.equals("N/A", true)) {
-                        translateToTurkish(genre).ifEmpty { genre }
-                    } else {
-                        genre
-                    }
-                    
-                    // Save poster URL only if it's a valid link
-                    val finalPoster = if (poster.startsWith("http")) poster else ""
-
-                    return@withContext ShowDetailsEntity(
-                        showName = showName, // keep original m3u show name as database key
-                        posterUrl = finalPoster,
-                        plot = translatedPlot,
-                        rating = rating,
-                        genre = translatedGenre,
-                        year = year,
-                        actors = actors
-                    )
+                    return@withContext jsonObject
                 }
             }
         } catch (e: Exception) {
-            Log.e("OMDB", "Error fetching OMDB for $showName", e)
+            Log.e("OMDB", "Error executing: $urlString", e)
         }
+        null
+    }
+
+    suspend fun translateToEnglish(text: String): String = withContext(Dispatchers.IO) {
+        if (text.isEmpty() || text.equals("N/A", true)) return@withContext ""
+        try {
+            val urlString = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=tr&tl=en&dt=t&q=${URLEncoder.encode(text, "UTF-8")}"
+            val url = URL(urlString)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val jsonText = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonArray = Json.parseToJsonElement(jsonText).jsonArray
+                val partsArray = jsonArray.getOrNull(0)?.jsonArray
+                if (partsArray != null) {
+                    val sb = java.lang.StringBuilder()
+                    for (i in 0 until partsArray.size) {
+                        val part = partsArray.getOrNull(i)?.jsonArray
+                        val translatedText = part?.getOrNull(0)?.jsonPrimitive?.content
+                        if (!translatedText.isNullOrEmpty()) {
+                            sb.append(translatedText)
+                        }
+                    }
+                    return@withContext sb.toString().trim()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("OMDB", "Translation to EN error for: $text", e)
+        }
+        ""
+    }
+
+    suspend fun fetchShowDetails(showName: String): ShowDetailsEntity? = withContext(Dispatchers.IO) {
+        val queryName = mapShowNameForQuery(showName)
+        var jsonObject: kotlinx.serialization.json.JsonObject? = null
+        
+        // Attempt 1: Exact search with queryName (`t=queryName`)
+        val url1 = "https://www.omdbapi.com/?apikey=$API_KEY&t=${URLEncoder.encode(queryName, "UTF-8")}"
+        jsonObject = executeQuery(url1)
+        
+        // Attempt 2: Translate queryName to English and do exact search
+        var engQuery = ""
+        if (jsonObject == null) {
+            engQuery = translateToEnglish(queryName)
+            if (engQuery.isNotEmpty() && !engQuery.equals(queryName, true)) {
+                val url2 = "https://www.omdbapi.com/?apikey=$API_KEY&t=${URLEncoder.encode(engQuery, "UTF-8")}"
+                jsonObject = executeQuery(url2)
+            }
+        }
+        
+        // Attempt 3: Search list with queryName (`s=queryName`)
+        if (jsonObject == null) {
+            val url3 = "https://www.omdbapi.com/?apikey=$API_KEY&s=${URLEncoder.encode(queryName, "UTF-8")}"
+            val searchObj = executeQuery(url3)
+            val searchList = searchObj?.get("Search")?.jsonArray
+            val firstItem = searchList?.firstOrNull()?.jsonObject
+            val imdbId = firstItem?.get("imdbID")?.jsonPrimitive?.content
+            if (!imdbId.isNullOrEmpty()) {
+                val urlId = "https://www.omdbapi.com/?apikey=$API_KEY&i=$imdbId"
+                jsonObject = executeQuery(urlId)
+            }
+        }
+        
+        // Attempt 4: Search list with engQuery (`s=engQuery`)
+        if (jsonObject == null && engQuery.isNotEmpty()) {
+            val url4 = "https://www.omdbapi.com/?apikey=$API_KEY&s=${URLEncoder.encode(engQuery, "UTF-8")}"
+            val searchObj = executeQuery(url4)
+            val searchList = searchObj?.get("Search")?.jsonArray
+            val firstItem = searchList?.firstOrNull()?.jsonObject
+            val imdbId = firstItem?.get("imdbID")?.jsonPrimitive?.content
+            if (!imdbId.isNullOrEmpty()) {
+                val urlId = "https://www.omdbapi.com/?apikey=$API_KEY&i=$imdbId"
+                jsonObject = executeQuery(urlId)
+            }
+        }
+        
+        if (jsonObject != null) {
+            val title = jsonObject["Title"]?.jsonPrimitive?.content ?: showName
+            val poster = jsonObject["Poster"]?.jsonPrimitive?.content ?: ""
+            val englishPlot = jsonObject["Plot"]?.jsonPrimitive?.content ?: ""
+            val rating = jsonObject["imdbRating"]?.jsonPrimitive?.content ?: ""
+            val genre = jsonObject["Genre"]?.jsonPrimitive?.content ?: ""
+            val year = jsonObject["Year"]?.jsonPrimitive?.content ?: ""
+            val actors = jsonObject["Actors"]?.jsonPrimitive?.content ?: ""
+            
+            // Direct quick translate checks
+            val translatedPlot = if (englishPlot.isNotEmpty() && !englishPlot.equals("N/A", true)) {
+                translateToTurkish(englishPlot).ifEmpty { englishPlot }
+            } else {
+                "Açıklama bulunamadı."
+            }
+            
+            val translatedGenre = if (genre.isNotEmpty() && !genre.equals("N/A", true)) {
+                translateToTurkish(genre).ifEmpty { genre }
+            } else {
+                genre
+            }
+            
+            // Save poster URL only if it's a valid link
+            val finalPoster = if (poster.startsWith("http")) poster else ""
+
+            return@withContext ShowDetailsEntity(
+                showName = showName, // keep original m3u show name as database key
+                posterUrl = finalPoster,
+                plot = translatedPlot,
+                rating = rating,
+                genre = translatedGenre,
+                year = year,
+                actors = actors
+            )
+        }
+        
         null
     }
 

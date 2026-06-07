@@ -79,6 +79,19 @@ class MainViewModel(private val appContainer: AppContainer, private val context:
 
     fun selectShow(name: String) {
         _selectedShowName.value = name
+        viewModelScope.launch {
+            try {
+                val cached = dao.getShowDetails(name)
+                if (cached == null || cached.posterUrl.isEmpty()) {
+                    val fetched = OmdbHelper.fetchShowDetails(name)
+                    if (fetched != null) {
+                        dao.insertShowDetails(fetched)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("MainViewModel", "Error fetching detailed show info for $name", e)
+            }
+        }
     }
 
     fun toggleFavorite(id: String, current: Boolean) {
