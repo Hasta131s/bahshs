@@ -17,11 +17,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -33,73 +35,45 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
     val allShows = viewModel.allShows.collectAsState().value
     val history = viewModel.history.collectAsState().value
     
-    val categories = listOf("Fantastik", "Macera", "Bilim Kurgu", "Komedi", "Aksiyon", "Aile")
+    val showsByCategory = allShows.groupBy { it.category }
+    val featuredShow = allShows.firstOrNull { it.showName.contains("Adventure Time", true) } ?: allShows.firstOrNull()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(RedMain),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "M",
-                                color = Color.White,
-                                fontWeight = FontWeight.Black,
-                                fontStyle = FontStyle.Italic,
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "MoonToon",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            fontWeight = FontWeight.Black,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = RedMain
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
                 ),
                 actions = {
                     IconButton(onClick = { navController.navigate("search") }) {
-                        Icon(Icons.Filled.Search, contentDescription = "Ara", tint = Color.LightGray)
-                    }
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(RedMain)
-                            .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(50)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("KİDS", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+                        Icon(Icons.Filled.Search, contentDescription = "Ara", tint = Color.White)
                     }
                 }
             )
-        }
+        },
+        containerColor = Color(0xFF0F0F13) // Deep dark background mode
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier = Modifier.fillMaxSize().background(Color(0xFF0F0F13))
         ) {
             // HERO BANNER
-            if (allShows.isNotEmpty()) {
-                val featuredShow = allShows.firstOrNull { it.showName.contains("Adventure Time", ignoreCase = true) } ?: allShows.first()
+            if (featuredShow != null) {
                 item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
-                            .aspectRatio(16f / 9f)
-                            .clip(RoundedCornerShape(24.dp))
+                            .height(450.dp)
                             .clickable { navController.navigate("details/${featuredShow.showName}") }
                     ) {
                         AsyncImage(
@@ -113,86 +87,95 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                                 .fillMaxSize()
                                 .background(
                                     Brush.verticalGradient(
-                                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f)),
-                                        startY = 100f
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color(0xFF0F0F13).copy(alpha = 0.5f),
+                                            Color(0xFF0F0F13)
+                                        ),
+                                        startY = 0f,
+                                        endY = 1300f
                                     )
                                 )
                         )
                         Column(
                             modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(16.dp)
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp)) {
-                                Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(RedMain).padding(horizontal = 6.dp, vertical = 2.dp)) {
-                                    Text("YENİ SEZON", color = Color.White, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                                }
-                                Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(Color.White.copy(alpha=0.1f)).padding(horizontal = 6.dp, vertical = 2.dp)) {
-                                    Text(featuredShow.category, color = Color.LightGray, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Medium)
-                                }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            ) {
+                                Text(
+                                    text = "YENİ BÖLÜM",
+                                    color = RedMain,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Black
+                                )
+                                Text("•", color = Color.White)
+                                Text(
+                                    text = featuredShow.category,
+                                    color = Color.LightGray,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
+                            
                             Text(
                                 text = featuredShow.showName,
-                                style = MaterialTheme.typography.headlineMedium,
+                                style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White,
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                modifier = Modifier.padding(bottom = 16.dp),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
                                 Button(
                                     onClick = { navController.navigate("details/${featuredShow.showName}") },
-                                    colors = ButtonDefaults.buttonColors(containerColor = RedMain),
-                                    modifier = Modifier.weight(1f).height(44.dp),
-                                    shape = RoundedCornerShape(12.dp)
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+                                    modifier = Modifier.weight(1f).height(48.dp),
+                                    shape = RoundedCornerShape(8.dp)
                                 ) {
                                     Icon(Icons.Filled.PlayArrow, contentDescription = null)
                                     Spacer(Modifier.width(8.dp))
-                                    Text("İzle", fontWeight = FontWeight.Bold)
+                                    Text("Hemen İzle", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
                     }
                 }
+            } else {
+                 item { Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 24.dp)) }
             }
 
             // CONTINUE WATCHING
             if (history.isNotEmpty()) {
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "İzlemeye Devam Et",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "TÜMÜNÜ GÖR",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = RedMain,
-                            modifier = Modifier.clickable { navController.navigate("history") }
-                        )
-                    }
+                    CategoryHeader("İzlemeye Devam Et")
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(history.take(5)) { episode ->
+                        items(history.take(8)) { episode ->
                             Column(
                                 modifier = Modifier
-                                    .width(140.dp)
+                                    .width(160.dp)
                                     .clickable { navController.navigate("player/${episode.id}") }
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .aspectRatio(3f/4f)
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .aspectRatio(16f/9f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color.DarkGray)
                                 ) {
                                     AsyncImage(
                                         model = episode.logoUrl,
@@ -200,104 +183,93 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier.fillMaxSize()
                                     )
-                                    Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.1f)))
-                                    
                                     val progress = if (episode.totalDuration > 0) episode.watchProgress.toFloat() / episode.totalDuration else 0f
-                                    Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray).align(Alignment.BottomCenter)) {
+                                    Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.White.copy(0.3f)).align(Alignment.BottomCenter)) {
                                         Box(modifier = Modifier.fillMaxWidth(progress).fillMaxHeight().background(RedMain))
                                     }
                                 }
                                 Spacer(Modifier.height(8.dp))
                                 Text(
-                                    text = episode.showName,
+                                    text = episode.title,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = Color.White,
-                                    maxLines = 1
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
-                                    text = episode.title,
+                                    text = episode.showName,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.Gray,
-                                    maxLines = 1
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
                     }
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(24.dp))
                 }
             }
 
-            // CATEGORIES
-            item {
-                Text(
-                    text = "Kategoriler",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(categories) { category ->
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(Color.White.copy(alpha = 0.05f))
-                                .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(50))
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .clickable {  }
-                        ) {
-                            Text(category, color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+            // CATEGORIES CAROUSEL
+            showsByCategory.forEach { (catName, shows) ->
+                item {
+                    CategoryHeader(catName.ifEmpty { "Diğer" })
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(shows) { show ->
+                            Box(
+                                modifier = Modifier
+                                    .width(120.dp)
+                                    .aspectRatio(2f/3f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { navController.navigate("details/${show.showName}") }
+                                    .background(Color.DarkGray)
+                            ) {
+                                AsyncImage(
+                                    model = show.logoUrl,
+                                    contentDescription = show.showName,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                Box(modifier = Modifier.fillMaxSize().background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(Color.Transparent, Color.Black.copy(alpha=0.9f)),
+                                        startY = 100f
+                                    )
+                                ))
+                                Text(
+                                    text = show.showName,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
+                    Spacer(Modifier.height(24.dp))
                 }
-                Spacer(Modifier.height(16.dp))
             }
-
+            
             item {
-                Text(
-                    text = "Tüm Çizgi Diziler",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            items(allShows) { show ->
-                ShowItemRow(show) {
-                    navController.navigate("details/${show.showName}")
-                }
+                Spacer(Modifier.height(80.dp))
             }
         }
     }
 }
 
 @Composable
-fun ShowItemRow(show: ShowInfo, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(Modifier.height(100.dp)) {
-            AsyncImage(
-                model = show.logoUrl,
-                contentDescription = show.showName,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.width(100.dp).fillMaxHeight()
-            )
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.Start) {
-                Text(show.showName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(4.dp))
-                Text(show.category, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-    }
+fun CategoryHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        color = Color.White,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
 }

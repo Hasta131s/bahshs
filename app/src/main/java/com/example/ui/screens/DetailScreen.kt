@@ -44,12 +44,13 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
-        }
+        },
+        containerColor = Color(0xFF0F0F13)
     ) { padding ->
-        LazyColumn(Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.fillMaxSize().background(Color(0xFF0F0F13))) {
             item {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(300.dp)
+                    modifier = Modifier.fillMaxWidth().height(450.dp)
                 ) {
                     AsyncImage(
                         model = posterUrl,
@@ -62,8 +63,9 @@ fun DetailScreen(viewModel: MainViewModel, navController: NavController, showNam
                             .fillMaxSize()
                             .background(
                                 Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background),
-                                    startY = 100f
+                                    colors = listOf(Color.Transparent, Color(0xFF0F0F13).copy(alpha = 0.5f), Color(0xFF0F0F13)),
+                                    startY = 0f,
+                                    endY = 1300f
                                 )
                             )
                     )
