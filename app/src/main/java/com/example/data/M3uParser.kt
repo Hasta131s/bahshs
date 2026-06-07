@@ -27,52 +27,33 @@ object M3uParser {
 
                         val groupMatch = Regex("group-title=\"([^\"]+)\"").find(line)
                         val groupTitle = groupMatch?.groupValues?.get(1)?.trim()
-                        
-                        val titlePart = line.substringAfterLast(",").trim()
-                        
-                        var showExtracted = ""
-                        var titleExtracted = titlePart
 
-                        // Priority 1: Generic splitting if it has " - "
-                        if (titlePart.contains(" - ")) {
-                            showExtracted = titlePart.substringBeforeLast(" - ").trim()
-                            titleExtracted = titlePart.substringAfterLast(" - ").trim()
-                            // Fix for things like "Adventure Time - Sezon 5"
-                            if (showExtracted.contains(" - ")) {
-                                showExtracted = showExtracted.substringBefore(" - ").trim()
-                            }
+                        val titlePart = line.substringAfterLast(",").trim()
+
+                        if (!groupTitle.isNullOrEmpty()) {
+                            currentShow = groupTitle
+                            currentTitle = titlePart
+                        } else if (titlePart.contains(" - ")) {
+                            currentShow = titlePart.substringBeforeLast(" - ").trim()
+                            currentTitle = titlePart.substringAfterLast(" - ").trim()
                         } else if (titlePart.contains("-")) {
-                            showExtracted = titlePart.substringBefore("-").trim()
-                            titleExtracted = titlePart.substringAfter("-").trim()
+                            currentShow = titlePart.substringBefore("-").trim()
+                            currentTitle = titlePart.substringAfter("-").trim()
                         } else {
                             val seasonMatch = Regex("(?i)(.*?)(\\s*(?:S\\d+|\\d+\\.Sezon|\\d+\\.Bölüm))").find(titlePart)
                             if (seasonMatch != null) {
-                                showExtracted = seasonMatch.groupValues[1].trim()
-                                titleExtracted = titlePart
+                                currentShow = seasonMatch.groupValues[1].trim()
+                                currentTitle = titlePart
                             } else {
-                                showExtracted = titlePart
-                                titleExtracted = titlePart
+                                currentShow = titlePart
+                                currentTitle = titlePart
                             }
                         }
-
-                        // Priority 2: Use groupTitle if it's available and not a generic category name like "Filmler"
-                        if (!groupTitle.isNullOrEmpty() &&
-                            !groupTitle.equals("Filmler", true) &&
-                            !groupTitle.equals("Diziler", true) &&
-                            !groupTitle.equals("Belgeseller", true) &&
-                            !groupTitle.equals("Haberler", true) &&
-                            !groupTitle.equals("Animasyon", true)) {
-                            showExtracted = groupTitle
-                        }
                         
-                        // Priority 3: Fallback if empty
-                        if (showExtracted.isEmpty() || showExtracted.equals("null", true)) {
-                            showExtracted = category
+                        // Fallbacks if extraction is generic
+                        if (currentShow.isEmpty() || currentShow.equals("null", true)) {
+                            currentShow = category
                         }
-                        
-                        currentShow = showExtracted
-                        currentTitle = titleExtracted
-
                     } else if (line.isNotEmpty() && !line.startsWith("#")) {
                         val url = line.trim()
                         if (url.startsWith("http")) { // filter valid URLs

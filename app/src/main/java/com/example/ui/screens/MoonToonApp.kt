@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.*
 import com.example.data.AppContainer
@@ -27,63 +29,63 @@ fun MoonToonApp(appContainer: AppContainer) {
             val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
             if (currentRoute?.startsWith("player/") != true) {
                 NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ) {
                     NavigationBarItem(
                         selected = currentRoute == "home",
                         onClick = { navController.navigate("home") },
                         icon = { Icon(Icons.Filled.Home, contentDescription = "Ana Sayfa") },
-                        label = { androidx.compose.material3.Text("Home", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false) },
-                        alwaysShowLabel = false,
+                        label = { Text("Ana Sayfa", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        alwaysShowLabel = true,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     )
                     NavigationBarItem(
                         selected = currentRoute == "search",
                         onClick = { navController.navigate("search") },
                         icon = { Icon(Icons.Filled.Search, contentDescription = "Ara") },
-                        label = { androidx.compose.material3.Text("Ara", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false) },
-                        alwaysShowLabel = false,
+                        label = { Text("Ara", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        alwaysShowLabel = true,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     )
                     NavigationBarItem(
                         selected = currentRoute == "favorites",
                         onClick = { navController.navigate("favorites") },
                         icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favoriler") },
-                        label = { androidx.compose.material3.Text("Favoriler", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false) },
-                        alwaysShowLabel = false,
+                        label = { Text("Favoriler", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        alwaysShowLabel = true,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     )
                     NavigationBarItem(
                         selected = currentRoute == "profile",
                         onClick = { navController.navigate("profile") },
                         icon = { Icon(Icons.Filled.Person, contentDescription = "Profil") },
-                        label = { androidx.compose.material3.Text("Profil", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false) },
-                        alwaysShowLabel = false,
+                        label = { Text("Profil", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        alwaysShowLabel = true,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     )
                 }

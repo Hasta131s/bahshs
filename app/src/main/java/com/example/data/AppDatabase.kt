@@ -18,6 +18,17 @@ data class MediaEntity(
     var lastWatchedTime: Long = 0
 )
 
+@Entity(tableName = "show_details")
+data class ShowDetailsEntity(
+    @PrimaryKey val showName: String,
+    val posterUrl: String,
+    val plot: String,
+    val rating: String = "",
+    val genre: String = "",
+    val year: String = "",
+    val actors: String = ""
+)
+
 @Dao
 interface MediaDao {
     @Query("SELECT * FROM media_items")
@@ -40,34 +51,19 @@ interface MediaDao {
     
     @Query("SELECT * FROM media_items WHERE lastWatchedTime > 0 ORDER BY lastWatchedTime DESC")
     fun getHistory(): Flow<List<MediaEntity>>
-}
 
-@Entity(tableName = "omdb_cache")
-data class OmdbEntity(
-    @PrimaryKey val title: String,
-    val poster: String,
-    val plot: String,
-    val genre: String,
-    val actors: String,
-    val imdbRating: String,
-    val lastFetched: Long
-)
-
-@Dao
-interface OmdbDao {
-    @Query("SELECT * FROM omdb_cache WHERE title = :title COLLATE NOCASE LIMIT 1")
-    suspend fun getByTitle(title: String): OmdbEntity?
-
-    @Query("SELECT * FROM omdb_cache")
-    fun getAllFlow(): Flow<List<OmdbEntity>>
+    @Query("SELECT * FROM show_details WHERE showName = :showName LIMIT 1")
+    suspend fun getShowDetails(showName: String): ShowDetailsEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(omdbInfo: OmdbEntity)
+    suspend fun insertShowDetails(details: ShowDetailsEntity)
+
+    @Query("SELECT * FROM show_details")
+    fun getAllShowDetailsFlow(): Flow<List<ShowDetailsEntity>>
 }
 
-@Database(entities = [MediaEntity::class, OmdbEntity::class], version = 3, exportSchema = false)
+@Database(entities = [MediaEntity::class, ShowDetailsEntity::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun mediaDao(): MediaDao
-    abstract fun omdbDao(): OmdbDao
 }
 

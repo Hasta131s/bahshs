@@ -3,10 +3,7 @@ package com.example.ui.screens
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.data.AppContainer
-import com.example.data.M3uParser
-import com.example.data.MediaEntity
-import com.example.data.OmdbEntity
+import com.example.data.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -26,54 +23,41 @@ class MainViewModel(private val appContainer: AppContainer, private val context:
         mediaList.distinctBy { it.showName }.map { ShowInfo(it.showName, it.logoUrl, it.category) }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     
+    val showDetailsMap = dao.getAllShowDetailsFlow().map { list ->
+        list.associateBy { it.showName }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+    
     val searchResults = combine(allShows, _searchQuery) { shows, query ->
         if (query.isEmpty()) emptyList() else shows.filter { it.showName.contains(query, true) || it.category.contains(query, true) }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _selectedShowName = MutableStateFlow("")
     val selectedShowEpisodes = combine(allMedia, _selectedShowName) { media, showName ->
-        val filtered = media.filter { it.showName == showName }
-        filtered.sortedWith(Comparator { a, b ->
-            val regex = Regex("\\d+|\\D+")
-            val partsA = regex.findAll(a.title).map { it.value }.toList()
-            val partsB = regex.findAll(b.title).map { it.value }.toList()
-            
-            var result = 0
-            for (i in 0 until minOf(partsA.size, partsB.size)) {
-                val pA = partsA[i]
-                val pB = partsB[i]
-                val numA = pA.toIntOrNull()
-                val numB = pB.toIntOrNull()
-                
-                if (numA != null && numB != null) {
-                    result = numA.compareTo(numB)
-                } else {
-                    result = pA.compareTo(pB, ignoreCase = true)
-                }
-                if (result != 0) break
-            }
-            if (result == 0) partsA.size.compareTo(partsB.size) else result
-        })
+        media.filter { it.showName == showName }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    
-    private val _omdbDetails = MutableStateFlow<Map<String, OmdbEntity>>(emptyMap())
-    val omdbDetails = _omdbDetails.asStateFlow()
-
-    fun fetchOmdbDetails(title: String) {
-        if (_omdbDetails.value.containsKey(title)) return
-        viewModelScope.launch {
-            val details = appContainer.omdbRepository.getShowInfo(title)
-            if (details != null) {
-                _omdbDetails.value = _omdbDetails.value.toMutableMap().apply { put(title, details) }
-            }
-        }
-    }
 
     init {
         viewModelScope.launch {
             if (dao.getAll().isEmpty()) {
                 val parsed = M3uParser.parseFromAssets(context)
                 dao.insertAll(parsed)
+            }
+            
+            // Collect shows and pre-fetch details for any that are missing
+            launch {
+                allShows.collectLatest { shows ->
+                    shows.forEach { show ->
+                        launch {
+                            val cached = dao.getShowDetails(show.showName)
+                            if (cached == null) {
+                                val fetched = OmdbHelper.fetchShowDetails(show.showName)
+                                if (fetched != null) {
+                                    dao.insertShowDetails(fetched)
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

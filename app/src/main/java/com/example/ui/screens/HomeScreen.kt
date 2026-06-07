@@ -27,16 +27,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.ui.theme.RedMain
+import com.example.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
     val allShows = viewModel.allShows.collectAsState().value
     val history = viewModel.history.collectAsState().value
+    val showDetailsMap = viewModel.showDetailsMap.collectAsState().value
     
     val showsByCategory = allShows.groupBy { it.category }
     val featuredShow = allShows.firstOrNull { it.showName.contains("Adventure Time", true) } ?: allShows.firstOrNull()
+
+    val featuredDetails = featuredShow?.let { showDetailsMap[it.showName] }
+    val featuredPoster = featuredDetails?.posterUrl?.ifEmpty { null } ?: featuredShow?.logoUrl
 
     Scaffold(
         topBar = {
@@ -47,7 +51,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                             text = "MoonToon",
                             fontWeight = FontWeight.Black,
                             style = MaterialTheme.typography.titleLarge,
-                            color = RedMain
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -62,19 +66,14 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                 }
             )
         },
-        containerColor = Color(0xFF0F0F13) // Deep dark background mode
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().background(Color(0xFF0F0F13))
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         ) {
             // HERO BANNER
             if (featuredShow != null) {
                 item {
-                    androidx.compose.runtime.LaunchedEffect(featuredShow.showName) {
-                        viewModel.fetchOmdbDetails(featuredShow.showName)
-                    }
-                    val details = viewModel.omdbDetails.collectAsState().value[featuredShow.showName]
-                    val posterUrl = details?.poster?.takeIf { it.isNotEmpty() } ?: featuredShow.logoUrl
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -82,7 +81,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                             .clickable { navController.navigate("details/${featuredShow.showName}") }
                     ) {
                         AsyncImage(
-                            model = posterUrl,
+                            model = featuredPoster,
                             contentDescription = featuredShow.showName,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
@@ -94,8 +93,8 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                                     Brush.verticalGradient(
                                         colors = listOf(
                                             Color.Transparent,
-                                            Color(0xFF0F0F13).copy(alpha = 0.5f),
-                                            Color(0xFF0F0F13)
+                                            MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
+                                            MaterialTheme.colorScheme.background
                                         ),
                                         startY = 0f,
                                         endY = 1300f
@@ -115,8 +114,8 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                                 modifier = Modifier.padding(bottom = 12.dp)
                             ) {
                                 Text(
-                                    text = "YENİ BÖLÜM",
-                                    color = RedMain,
+                                    text = "ÖNERİLEN",
+                                    color = MaterialTheme.colorScheme.primary,
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Black
                                 )
@@ -127,6 +126,15 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold
                                 )
+                                if (!featuredDetails?.rating.isNullOrEmpty()) {
+                                    Text("•", color = Color.White)
+                                    Text(
+                                        text = "★ ${featuredDetails?.rating}",
+                                        color = DisneyPromoGold,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                             
                             Text(
@@ -170,6 +178,9 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(history.take(8)) { episode ->
+                            val showDetails = showDetailsMap[episode.showName]
+                            val episodePoster = episode.logoUrl.ifEmpty { showDetails?.posterUrl }
+
                             Column(
                                 modifier = Modifier
                                     .width(160.dp)
@@ -180,17 +191,18 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                                         .fillMaxWidth()
                                         .aspectRatio(16f/9f)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(Color.DarkGray)
+                                        .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.surface)
                                 ) {
                                     AsyncImage(
-                                        model = episode.logoUrl,
+                                        model = episodePoster,
                                         contentDescription = episode.title,
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier.fillMaxSize()
                                     )
                                     val progress = if (episode.totalDuration > 0) episode.watchProgress.toFloat() / episode.totalDuration else 0f
                                     Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.White.copy(0.3f)).align(Alignment.BottomCenter)) {
-                                        Box(modifier = Modifier.fillMaxWidth(progress).fillMaxHeight().background(RedMain))
+                                        Box(modifier = Modifier.fillMaxWidth(progress).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
                                     }
                                 }
                                 Spacer(Modifier.height(8.dp))
@@ -225,7 +237,40 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(shows) { show ->
-                            ShowCard(show = show, viewModel = viewModel, navController = navController)
+                            val details = showDetailsMap[show.showName]
+                            val posterUrl = details?.posterUrl?.ifEmpty { null } ?: show.logoUrl
+
+                            Box(
+                                modifier = Modifier
+                                    .width(120.dp)
+                                    .aspectRatio(2f/3f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .border(1.2.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                    .clickable { navController.navigate("details/${show.showName}") }
+                                    .background(MaterialTheme.colorScheme.surface)
+                            ) {
+                                AsyncImage(
+                                    model = posterUrl,
+                                    contentDescription = show.showName,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                Box(modifier = Modifier.fillMaxSize().background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(Color.Transparent, Color.Black.copy(alpha=0.9f)),
+                                        startY = 100f
+                                    )
+                                ))
+                                Text(
+                                    text = show.showName,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                     Spacer(Modifier.height(24.dp))
@@ -236,46 +281,6 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
                 Spacer(Modifier.height(80.dp))
             }
         }
-    }
-}
-
-@Composable
-fun ShowCard(show: ShowInfo, viewModel: MainViewModel, navController: NavController) {
-    androidx.compose.runtime.LaunchedEffect(show.showName) {
-        viewModel.fetchOmdbDetails(show.showName)
-    }
-    val details = viewModel.omdbDetails.collectAsState().value[show.showName]
-    val posterUrl = details?.poster?.takeIf { it.isNotEmpty() } ?: show.logoUrl
-
-    Box(
-        modifier = Modifier
-            .width(120.dp)
-            .aspectRatio(2f/3f)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { navController.navigate("details/${show.showName}") }
-            .background(Color.DarkGray)
-    ) {
-        AsyncImage(
-            model = posterUrl,
-            contentDescription = show.showName,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-        Box(modifier = Modifier.fillMaxSize().background(
-            Brush.verticalGradient(
-                colors = listOf(Color.Transparent, Color.Black.copy(alpha=0.9f)),
-                startY = 100f
-            )
-        ))
-        Text(
-            text = show.showName,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }
 
